@@ -158,6 +158,7 @@ public class UserController {
 		System.out.println("CID: "+cId);
 		
 		Optional<Contact> optional =this.contactRepository.findById(cId);
+		if(optional.isPresent()) {
 		Contact contact = optional.get();
 		
 		String userName = principal.getName();
@@ -165,9 +166,27 @@ public class UserController {
 		System.out.println(user);
 		if(user.getId()==contact.getUser().getId()) {
 		model.addAttribute("contact",contact);
+		model.addAttribute("title", contact.getName());
+		System.out.println("User Details:"+contact);
 		}
-		return "normal/contact_detail";
+		}else {
+		 model.addAttribute("permissionDenied", true);
+		}
+		 return "normal/contact_detail";
 		
+	}
+	
+	//delete contact handler
+	@GetMapping("/delete/{cid}")
+	public String deleteContact(@PathVariable("cid") Integer cId, Model model, HttpSession session) {
+		Optional<Contact> contactOptional = this.contactRepository.findById(cId);
+		Contact contact= contactOptional.get();
+		
+		
+		contact.setUser(null);
+		this.contactRepository.delete(contact);
+		session.setAttribute("message", new Message("Contact Deleted Successfully...", "success"));
+		return "redirect:/user/show_contacts/0";
 	}
 
 }
